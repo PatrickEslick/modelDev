@@ -2,10 +2,10 @@ library(shiny)
 library(shinydashboard)
 
 # Define UI for application that draws a histogram
-shinyUI(fluidPage(theme="bootstrap.css",
+shinyUI(fluidPage(
   tabsetPanel(
     tabPanel("Information",
-      includeHTML("help.html")
+      includeHTML("README.html")
     ),
     tabPanel("Upload/Examine Data",
       fluidRow(
