@@ -69,24 +69,6 @@ shinyServer(function(input,output) {
       incProgress(0.7, "Transforming data...")
       Data <- Data[,names(Data)[names(Data) %in% c(input$useP, "sin2piD", "cos2piD", "sin4piD", "cos4piD")]]
       #Add transformations, if selected
-      # for(i in 1:ncol(Data[,!(names(Data) %in% c("datetime","sin2piD", "cos2piD", "sin4piD", "cos4piD"))])) {
-      #   if(input[[paste("logp", i, sep="")]]) {
-      #     Data[,i] <- log10(Data[,i])
-      #     names(Data)[i] <- paste("log", names(Data)[i], sep="")
-      #   }
-      #   if(input[[paste("sqrp", i, sep="")]]) {
-      #     Data[,i] <- (Data[,i])^2
-      #     names(Data)[i] <- paste("sqr", names(Data)[i], sep="")
-      #   }
-      #   if(input[[paste("sqrtp", i, sep="")]]) {
-      #     Data[,i] <- (Data[,i])^0.5
-      #     names(Data)[i] <- paste("sqrt", names(Data)[i], sep="")
-      #   }
-      #   if(input[[paste("cubep", i, sep="")]]) {
-      #     Data[,i] <- (Data[,i])^3
-      #     names(Data)[i] <- paste("cube", names(Data)[i], sep="")
-      #   }
-      # }
       for(i in names(Data[,!(names(Data) %in% c("datetime","sin2piD", "cos2piD", "sin4piD", "cos4piD"))])) {
         if(input[[paste("logp", i, sep="")]]) {
           Data[,i] <- log10(Data[,i])
@@ -165,8 +147,6 @@ shinyServer(function(input,output) {
     sInFile <- input$mergedFile
     start <- NA
     end <- NA
-    # print(start)
-    # print(end)
     data <- readCensored(sInFile$datapath, start, end, dateformat=input$sdateformat)
     data
     
@@ -249,24 +229,6 @@ shinyServer(function(input,output) {
     #ONly include variables checked in the second tab
     Data <- Data[,input$useP]
     #Add transformations, if selected
-    # for(i in 1:ncol(Data)) {
-    #   if(input[[paste("logp", i, sep="")]]) {
-    #     Data[,i] <- log10(Data[,i])
-    #     names(Data)[i] <- paste("log", names(Data)[i], sep="")
-    #   }
-    #   if(input[[paste("sqrp", i, sep="")]]) {
-    #     Data[,i] <- (Data[,i])^2
-    #     names(Data)[i] <- paste("sqr", names(Data)[i], sep="")
-    #   }
-    #   if(input[[paste("sqrtp", i, sep="")]]) {
-    #     Data[,i] <- (Data[,i])^0.5
-    #     names(Data)[i] <- paste("sqrt", names(Data)[i], sep="")
-    #   }
-    #   if(input[[paste("cubep", i, sep="")]]) {
-    #     Data[,i] <- (Data[,i])^3
-    #     names(Data)[i] <- paste("cube", names(Data)[i], sep="")
-    #   }
-    # }
     for(i in names(Data)) {
       if(input[[paste("logp", i, sep="")]]) {
         Data[,i] <- log10(Data[,i])
@@ -306,24 +268,6 @@ shinyServer(function(input,output) {
     datetimes <- Data$datetime
     Data <- Data[,names(Data)[names(Data) %in% c(input$useP, "sin2piD", "cos2piD", "sin4piD", "cos4piD")]]
     #Add transformations, if selected
-    # for(i in 1:ncol(Data[,!(names(Data) %in% c("datetime","sin2piD", "cos2piD", "sin4piD", "cos4piD"))])) {
-    #   if(input[[paste("logp", i, sep="")]]) {
-    #     Data[,i] <- log10(Data[,i])
-    #     names(Data)[i] <- paste("log", names(Data)[i], sep="")
-    #   }
-    #   if(input[[paste("sqrp", i, sep="")]]) {
-    #     Data[,i] <- (Data[,i])^2
-    #     names(Data)[i] <- paste("sqr", names(Data)[i], sep="")
-    #   }
-    #   if(input[[paste("sqrtp", i, sep="")]]) {
-    #     Data[,i] <- (Data[,i])^0.5
-    #     names(Data)[i] <- paste("sqrt", names(Data)[i], sep="")
-    #   }
-    #   if(input[[paste("cubep", i, sep="")]]) {
-    #     Data[,i] <- (Data[,i])^3
-    #     names(Data)[i] <- paste("cube", names(Data)[i], sep="")
-    #   }
-    # }
     for(i in names(Data[,!(names(Data) %in% c("datetime","sin2piD", "cos2piD", "sin4piD", "cos4piD"))])) {
       if(input[[paste("logp", i, sep="")]]) {
         Data[,i] <- log10(Data[,i])
@@ -627,10 +571,6 @@ shinyServer(function(input,output) {
     Data <- sampleData()
     Data <- Data[,!(names(Data) %in% c("datetime", "dectime", "year", "month", "day", "hour"))]
     Data <- Data[,names(Data) %in% input$useP]
-    # print(head(Data))
-    # lapply(1:ncol(Data), function(i) {
-    #   checkboxInput(inputId = paste("logp", i, sep=""), label=paste("Log", names(Data)[i]))
-    # })
     lapply(names(Data), function(i) {
       checkboxInput(inputId = paste("logp", i, sep=""), label = paste("Log", i))
     })
@@ -641,9 +581,6 @@ shinyServer(function(input,output) {
     Data <- sampleData()
     Data <- Data[,!(names(Data) %in% c("datetime", "dectime", "year", "month", "day", "hour"))]
     Data <- Data[,names(Data) %in% input$useP]
-    # lapply(1:ncol(Data), function(i) {
-    #   checkboxInput(inputId = paste("sqrp", i, sep=""), label=paste("Square ", names(Data)[i]))
-    # })
     lapply(names(Data), function(i) {
       checkboxInput(inputId = paste("sqrp", i, sep=""), label=paste("Square", i))
     })
@@ -667,9 +604,6 @@ shinyServer(function(input,output) {
     Data <- sampleData()
     Data <- Data[,!(names(Data) %in% c("datetime", "dectime", "year", "month", "day", "hour"))]
     Data <- Data[,names(Data) %in% input$useP]
-    # lapply(1:ncol(Data), function(i) {
-    #   checkboxInput(inputId = paste("cubep", i, sep=""), label=paste("Cube ", names(Data)[i]))
-    # })
     lapply(names(Data), function(i) {
       checkboxInput(inputId = paste("cubep", i, sep=""), label=paste("Cube", i))
     })
@@ -1874,7 +1808,6 @@ shinyServer(function(input,output) {
     names(pData) <- c("datetime", "P")
     
     model <- valModellm()
-    # print(model)
     rmse <- summary.lm(model)
     rmse <- rmse$sigma #Calculate the rmse for the model
     
