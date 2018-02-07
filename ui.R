@@ -88,7 +88,7 @@ shinyUI(fluidPage(
             )
           ),
           fluidRow(
-            column(8,
+            column(12,
               helpText("Boxplots of continuous measurements and sample data"),
               checkboxInput("boxLog2", "Log Scale", value=FALSE),
               plotOutput("contVsSampled")

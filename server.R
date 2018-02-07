@@ -557,14 +557,14 @@ shinyServer(function(input,output) {
     } else {
       logOpt <- ""
     }
-    par(mfrow=c(rows,4), cex=1.1)
+    par(mfrow=c(rows,4), cex=1.1, mar=c(1, 2, 1, 1))
     for(i in sharedNames) {
       #Subset the frames by variable
       temp_data <- data[data$variable==i, c("value", "group")]
       boxplot(value~group, data=temp_data, boxwex=0.5, col=c("coral2", "steelblue2"), 
               main=i, las=1, log=logOpt)
     }
-  }, height=800)
+  }, height=1000)
   
   #Generate a series of checkbox inputs to log-transform variables
   output$logChoices <- renderUI({
