@@ -13,7 +13,7 @@ Patrick Eslick
 peslick@usgs.gov  
 785-832-3506
 
-##Running modelDev Remotely
+## Running modelDev Remotely
 
 You will need to have the shiny, rmarkdown, scales, labeling, ggplot2, car, dataRetrieval, lubridate, smwrQW, smwrStats, XML, DAAG, and MASS packages installed. This could be done by running the following commands in an R Console (or RStudio):
 
