@@ -11,8 +11,37 @@ If you notice anything wrong with this application, let me know.
  
 Patrick Eslick  
 peslick@usgs.gov  
-785-832-3506  
+785-832-3506
 
+##Running modelDev Remotely
+
+You will need to have the shiny, rmarkdown, scales, labeling, ggplot2, car, dataRetrieval, lubridate, smwrQW, smwrStats, XML, DAAG, and MASS packages installed. This could be done by running the following commands in an R Console (or RStudio):
+
+``` r
+install.packages("shiny") 
+install.packages("shinydashboard")
+install.packages("rmarkdown") 
+install.packages("scales") 
+install.packages("labeling")
+install.packages("ggplot2") 
+install.packages("car") 
+install.packages("dataRetrieval", repos="https://owi.usgs.gov/R") 
+install.packages("lubridate") 
+install.packages("smwrQW", repos="https://owi.usgs.gov/R") 
+install.packages("smwrStats", repos="https://owi.usgs.gov/R") 
+install.packages("grid") 
+install.packages("XML")
+install.packages("DAAG")
+install.packages("leaps")
+install.packages("reshape2")
+install.packages("MASS")
+```
+Once you have the packages installed, you can start the app with the following commands:
+
+``` r
+library(shiny)
+runGitHub("PatrickEslick/modelDev", launch.browser=TRUE)
+```
 ## Data requirements
 
 Before you begin, you will need to prepare two data files, one containing merged discrete and continuous data, and one containing a continuous time series of measurements from the monitor. Both files should have a column called "datetime" with the complete date and time in one of the formats listed on the second tab of this application. Both files should share all of the continuous variables. For example, if you have specific conductance in your merged file, you must also have it in your continuous file. Any missing observations for any sample can be left blank, or filled in with "NA". Naming doesn't matter, as long as it's consistent accross the two files, and column names don't contain special characters. Do not include any other date variables, or transformations of variables. You will be able to add these later on. Your files might look like this:
