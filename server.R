@@ -17,7 +17,7 @@ library(reshape2)
 library(MASS)
 source("helpers.R")
 
-options(shiny.maxRequestSize=100*1024^2)
+options(shiny.maxRequestSize=100*1024^2, stringsAsFactors = FALSE)
 
 shinyServer(function(input,output) {
   

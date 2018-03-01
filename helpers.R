@@ -1,3 +1,4 @@
+options(stringsAsFactors=FALSE)
 
 cvsummary <- function(data, form.lm, m = 3, dots = FALSE, seed = 29, plotit = c("Observed", "Residual"), 
                       main = "Small symbols show cross-validation predicted values",  legend.pos = "topleft", printit = TRUE) {
