@@ -178,7 +178,8 @@ modelXSummary <- function(modelForm, Data, removed, bcf) {
   
   Data <- Data[!(rownames(Data) %in% as.numeric(strsplit(removed, "[^[:alnum:]]")[[1]])),]
   
-  form <- strsplit(modelForm, "[^[:alnum:]]")[[1]]
+  # form <- strsplit(modelForm, "[^[:alnum:]]")[[1]]
+  form <- strsplit(gsub(" ", "+", gsub("~", "+", modelForm)), "\\+")[[1]]
   form <- form[!(form %in% c("", " "))]
   logtrans <- (substr(form[1], 1, 3) == "log")
   
@@ -391,7 +392,7 @@ readCensored <- function(file, start=NA, end=NA, dateformat="", action="replace"
 
 modelXeq <- function(form, model) {
 
-  form <- strsplit(form, "[^[:alnum:]]")[[1]]
+  form <- form <- strsplit(gsub(" ", "+", gsub("~", "+", form)), "\\+")[[1]]
   form <- form[!(form %in% c("", " "))]
   logtrans <- (substr(form, 1, 3) == "log")
   
@@ -442,7 +443,7 @@ modelXovc <- function(form, model, func, antiFunc, isCens, isFlag) {
 modelXcvo <- function(form, model, data, func, antiFunc, bcf, isCens, isFlag) {
   
   #Break up the form into a list of variables
-  form <- strsplit(form, "[^[:alnum:]]")[[1]]
+  form <- form <- strsplit(gsub(" ", "+", gsub("~", "+", form)), "\\+")[[1]]
   form <- form[!(form %in% c("", " "))]
   
   x <- antiFunc(predict(model)) * bcf

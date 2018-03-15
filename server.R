@@ -617,9 +617,6 @@ shinyServer(function(input,output) {
   #Generate a scatter plot matrix of the variables
   output$pairsPlot <- renderPlot({
     Data <- filtData()
-    for(i in names(Data)) {
-      print(class(Data[,i]))
-    }
     pairs(Data, panel=panel.smooth)}, height=800)
   
   #Generate a table of correlation coefficients
@@ -648,12 +645,12 @@ shinyServer(function(input,output) {
     #Get a frame of just the predictors (anything not having a response variable name)
     predictors <- data[,!(names(data) %in% responseVars)]
     #Get the response variable (anything with a name in the list)
-    response <- data[,names(data) %in% responseVars]
-    rName <- names(data)[names(data) %in% responseVars]
+    response <- data[,names(data) %in% responseVars, drop=FALSE]
+    # rName <- names(data)[names(data) %in% responseVars]
     #Find the best models
     models <- allReg(predictors, response, nmax=5, lin.dep=0)
     #Rename "response" in the formulas with the name of the response variable
-    models$model.formula <- sub("response", rName, models$model.formula)
+    # models$model.formula <- sub("response", rName, models$model.formula)
     models
   })
   
@@ -737,36 +734,66 @@ shinyServer(function(input,output) {
   #Data used to calculate each model
   model1Data <- reactive({
     
-    form <- strsplit(model1Form(), "[^[:alnum:]]")[[1]]
-    form <- form[!(form %in% c("", " "))]
-    
     Data <- filtDatawD()
+    
+    #Find the response variable
+    variables <- names(Data)
+    prefixes <- c("cube", "sqr", "sqrt", "log")
+    respVars <- c(input$dVar, paste(prefixes, input$dVar, sep=""))
+    resp <- variables[variables %in% respVars]
+    
+    #Keep datetime, response variable, and those in the model form
+    keep <- c("datetime", resp, input$modelForm1)
+    
+    #Get rid of outliers that have been removed
     Data <- Data[!(rownames(Data) %in% as.numeric(strsplit(input$model1remove, "[^[:alnum:]]")[[1]])),]
-    Data <- Data[,c("datetime", form)]
+
+    #Keep the columns used in the model and throw away rows with NA
+    Data <- Data[,keep]
     Data <- na.omit(Data)
     Data
   })
   
   model2Data <- reactive({
     
-    form <- strsplit(model2Form(), "[^[:alnum:]]")[[1]]
-    form <- form[!(form %in% c("", " "))]
-    
     Data <- filtDatawD()
+    
+    #Find the response variable
+    variables <- names(Data)
+    prefixes <- c("cube", "sqr", "sqrt", "log")
+    respVars <- c(input$dVar, paste(prefixes, input$dVar, sep=""))
+    resp <- variables[variables %in% respVars]
+    
+    #Keep datetime, response variable, and those in the model form
+    keep <- c("datetime", resp, input$modelForm2)
+    
+    #Get rid of outliers that have been removed
     Data <- Data[!(rownames(Data) %in% as.numeric(strsplit(input$model2remove, "[^[:alnum:]]")[[1]])),]
-    Data <- Data[,c("datetime", form)]
+    
+    #Keep the columns used in the model and throw away rows with NA
+    Data <- Data[,keep]
     Data <- na.omit(Data)
     Data
   })
   
   model3Data <- reactive({
     
-    form <- strsplit(model3Form(), "[^[:alnum:]]")[[1]]
-    form <- form[!(form %in% c("", " "))]
-    
     Data <- filtDatawD()
+    
+    #Find the response variable
+    variables <- names(Data)
+    prefixes <- c("cube", "sqr", "sqrt", "log")
+    respVars <- c(input$dVar, paste(prefixes, input$dVar, sep=""))
+    resp <- variables[variables %in% respVars]
+    
+    #Keep datetime, response variable, and those in the model form
+    keep <- c("datetime", resp, input$modelForm3)
+    
+    #Get rid of outliers that have been removed
     Data <- Data[!(rownames(Data) %in% as.numeric(strsplit(input$model3remove, "[^[:alnum:]]")[[1]])),]
-    Data <- Data[,c("datetime", form)]
+    
+    #Keep the columns used in the model and throw away rows with NA
+    Data <- Data[,keep]
     Data <- na.omit(Data)
     Data
   })
@@ -835,8 +862,6 @@ shinyServer(function(input,output) {
   #Calculate the models
   model1lm <- reactive({
     
-    form <- strsplit(model1Form(), "[^[:alnum:]]")[[1]]
-    form <- form[!(form %in% c("", " "))]
     f <- formula(model1Form())
     
     Data <- model1Data()
@@ -848,8 +873,6 @@ shinyServer(function(input,output) {
   
   model2lm <- reactive({
     
-    form <- strsplit(model2Form(), "[^[:alnum:]]")[[1]]
-    form <- form[!(form %in% c("", " "))]
     f <- formula(model2Form())
     
     Data <- model2Data()
@@ -861,8 +884,6 @@ shinyServer(function(input,output) {
   
   model3lm <- reactive({
     
-    form <- strsplit(model3Form(), "[^[:alnum:]]")[[1]]
-    form <- form[!(form %in% c("", " "))]
     f <- formula(model3Form())
     
     Data <- model3Data()
@@ -990,7 +1011,6 @@ shinyServer(function(input,output) {
   
   #Find the bias correction factor of the models
   model1bcf <- reactive({
-
     
     if(model1Form() != "") {
       if(input$dVar %in% names(model1Data())) {
@@ -1241,16 +1261,10 @@ shinyServer(function(input,output) {
     
     if(model1Form() == "")
       return(NULL)
-    print("modelData")
     modelData <- model1Data()
-    print(head(modelData))
     isCens <- isCensored()
     isCens <- isCens[isCens$datetime %in% modelData$datetime, c("datetime", input$dVar)]
     isFlag <- model1isFlag()
-    
-    print(model1Function())
-    print(model1antiFunction())
-    print(model1bcf())
     
     modelXcvo(model1Form(), model1lm(), model1Data(), model1Function(), model1antiFunction(), model1bcf(), isCens, isFlag)
       
@@ -1780,10 +1794,6 @@ shinyServer(function(input,output) {
     
     cData <- valContDataTrans()
     acData <- allContDataTrans()
-    print("acData")
-    print(head(acData))
-    print("cData")
-    print(head(cData))
     model <- valModellm() 
     
     #Get the predictions, or return an empty data frame if no model is selected
@@ -1798,10 +1808,7 @@ shinyServer(function(input,output) {
   
   #Data used for thentwo validation plots - adding and subtracting sigma
   valPlotData <- reactive({
-    print("prePreData")
     pData <- predictedDataVal()
-    print("pData")
-    print(head(pData))
     names(pData) <- c("datetime", "P")
     
     model <- valModellm()
