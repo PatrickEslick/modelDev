@@ -579,4 +579,23 @@ modelXyearResidBox <- function(data, model) {
   }
   
 }
+
+#Say what season a date is intoda
+season <- function(date) {
+  season_atm <- function(dt) {
+    mnth <- month(dt)
+    if(mnth %in% c(12, 1, 2)) {
+      ssn_atm <- "Winter"
+    } else if(mnth %in% c(3, 4, 5)) {
+      ssn_atm <- "Spring"
+    } else if (mnth %in% c(6, 7, 8)) {
+      ssn_atm <- "Summer"
+    } else if (mnth %in% c(9, 10, 11)) {
+      ssn_atm <- "Fall"
+    }
+    return(ssn_atm)
+  }
+  ssn <- sapply(date, season_atm)
+  return(ssn)
+}
   
