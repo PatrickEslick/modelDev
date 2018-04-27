@@ -15,6 +15,7 @@ library(DAAG)
 library(leaps)
 library(reshape2)
 library(MASS)
+library(dplyr)
 source("helpers.R")
 
 options(shiny.maxRequestSize=100*1024^2, stringsAsFactors = FALSE)
@@ -1826,6 +1827,33 @@ shinyServer(function(input,output) {
     
   })
   
+  # valPlotPoints <- reactive({
+  #   
+  #   #Find the transformation function
+  #   if(input$valModel == "Model 1") {
+  #     transFunction <- model1Function()
+  #   } else if(input$valModel == "Model 2") {
+  #     transFunction <- model2Function()
+  #   } else if(input$valModel == "Model 3") {
+  #     transFunction <- model3Function()
+  #   } else {
+  #     transFunction <- function(x) {x}
+  #   }
+  #   
+  #   #Get the validation points and apply the transformation
+  #   points <- valSampleData()
+  #   cens <- valIsCensored()
+  #   if(nrow(points) != 0) {
+  #     points <- points[, c("datetime", input$dVar)]
+  #     names(points)[2] <- "Measured"
+  #     points$Measured <- transFunction(points$Measured)
+  #     cens <- cens[, c("datetime", input$dVar)]
+  #     points$cens <- cens[, 2]
+  #   }
+  #   points
+  #   
+  # })
+  
   valPlotPoints <- reactive({
     
     #Find the transformation function
@@ -1840,14 +1868,79 @@ shinyServer(function(input,output) {
     }
     
     #Get the validation points and apply the transformation
-    points <- valSampleData()
+    Data <- valSampleData()
     cens <- valIsCensored()
-    if(nrow(points) != 0) {
-      points <- points[, c("datetime", input$dVar)]
-      names(points)[2] <- "Measured"
-      points$Measured <- transFunction(points$Measured)
+    if(nrow(Data) != 0) {
+      
+      #Add censored flags to the data
+      # cens <- cens[, c("datetime", input$dVar)]
+      # Data$censored <- cens[, 2]
+      # print(head(Data))
+      # 
+      #Add seasonality variables, if selected
+      if(input$sin2piD) {
+        Data$sin2piD <- sin(2*pi*(Data$day/365))
+        Data$cos2piD <- cos(2*pi*(Data$day/365))
+      }
+      if(input$sin4piD) {
+        Data$sin4piD <- sin(4*pi*(Data$day/365))
+        Data$cos4piD <- cos(4*pi*(Data$day/365))
+      }
+      #Drop all the time variables except datetime
+      Data <- Data[,!(names(Data) %in% c("dectime", "year", "month", "day", "hour"))]
+      #ONly include variables checked in the second tab
+      datetimes <- Data$datetime
+      # Data <- Data[,names(Data)[names(Data) %in% c(input$useP, "sin2piD", "cos2piD", "sin4piD", "cos4piD")]]
+      #Add transformations, if selected
+      for(i in names(Data[,!(names(Data) %in% c("datetime","sin2piD", "cos2piD", "sin4piD", "cos4piD"))])) {
+        if(input[[paste("logp", i, sep="")]]) {
+          Data[,i] <- log10(Data[,i])
+          names(Data)[names(Data) == i] <- paste("log", i, sep="")
+        }
+        if(input[[paste("sqrp", i, sep="")]]) {
+          Data[,i] <- (Data[,i])^2
+          names(Data)[names(Data) == i] <- paste("sqr", i, sep="")
+        }
+        if(input[[paste("sqrtp", i, sep="")]]) {
+          Data[,i] <- (Data[,i])^0.5
+          names(Data)[names(Data) == i] <- paste("sqrt", i, sep="")
+        }
+        if(input[[paste("cubep", i, sep="")]]) {
+          Data[,i] <- (Data[,i])^3
+          names(Data)[names(Data) == i] <- paste("cube", i, sep="")
+        }
+      }
+      Data$datetime <- datetimes
+      
+      #Find the name of the response variable
+      variables <- names(filtDatawD())
+      prefixes <- c("cube", "sqr", "sqrt", "log")
+      respVars <- c(input$dVar, paste(prefixes, input$dVar, sep=""))
+      resp <- variables[variables %in% respVars]
+      resp <- resp[1]
+      
+      #Predict the response variable 
+      pred <- predictSeries(model = valModellm(), timeSeriesData = Data)
+      
+      names(Data)[names(Data)==resp] <- "Measured"
+      
+      sigma <- summary.lm(valModellm())$sigma
+      
       cens <- cens[, c("datetime", input$dVar)]
-      points$cens <- cens[, 2]
+      names(cens)[2] <- "censored"
+      
+      print(head(Data))
+      
+      points <- select(Data, datetime, Measured) %>%
+        inner_join(pred, by = "datetime") %>%
+        inner_join(cens, by = "datetime") %>% 
+        rename(Predicted = predicted) %>%
+        mutate(Residual = Measured - Predicted,
+               Sigma_Distance = Residual/sigma)
+      
+      
+    } else {
+      points <- Data
     }
     points
     
@@ -1861,14 +1954,19 @@ shinyServer(function(input,output) {
     data <- data[data$datetime > end,]
     #Get the points, if any
     points <- valPlotPoints()
+    if(nrow(points) > 0) {
+      points <- points %>%
+        mutate(High_Residual = Sigma_Distance > 2)
+    }
 
     p <- ggplot(data = data) +
       geom_ribbon(aes(x=datetime, ymin=pDown3, ymax=pUp3), fill="#BFDBFF") +
       geom_ribbon(aes(x=datetime, ymin=pDown2, ymax=pUp2), fill="#CCE1FF") +
       geom_ribbon(aes(x=datetime, ymin=pDown1, ymax=pUp1), fill="#F0F4FC") +
       geom_line(aes(x = datetime, y = P), color="steelblue3") +
-      geom_point(data=points, aes(x=datetime, y=Measured, shape=cens), color="orangered1", size=3) +
+      geom_point(data=points, aes(x=datetime, y=Measured, shape=censored, color=High_Residual), size=3) +
       scale_shape_manual(values = c(19, 1), guide=FALSE) +
+      scale_color_manual(values = c("black", "orangered1")) +
       scale_x_datetime() +
       xlab("Datetime") + ylab("Modeled Value")
     p
@@ -1899,17 +1997,100 @@ shinyServer(function(input,output) {
     if(!is.null(rangesVal$x)) {
       points <- points[points$datetime > rangesVal$x[1] & points$datetime < rangesVal$x[2], ]
     }
+    if(nrow(points) > 0) {
+      points <- points %>%
+        mutate(High_Residual = Sigma_Distance > 2)
+    }
     
     p <- ggplot(data = data) +
       geom_ribbon(aes(x=datetime, ymin=pDown3, ymax=pUp3), fill="#BFDBFF") +
       geom_ribbon(aes(x=datetime, ymin=pDown2, ymax=pUp2), fill="#CCE1FF") +
       geom_ribbon(aes(x=datetime, ymin=pDown1, ymax=pUp1), fill="#F0F4FC") +
       geom_line(aes(x = datetime, y = P), color="steelblue3") +
-      geom_point(data=points, aes(x=datetime, y=Measured, shape=cens), color="orangered1", size=3) +
+      geom_point(data=points, aes(x=datetime, y=Measured, shape=censored, color=High_Residual), size=3) +
       scale_shape_manual(values = c(19, 1), guide=FALSE) +
+      scale_color_manual(values = c("black", "orangered1")) +
       scale_x_datetime() +
       xlab("Datetime") + ylab("Modeled Value")
     p
   })
+  
+  output$valDataTable <- renderDataTable ({
+    
+    valPlotPoints() %>% 
+      select(-censored)
+    
+  })
+  
+  output$valYearBox <- renderPlot({
+    data <- valPlotPoints() %>%
+      mutate(Year = year(datetime))
+    
+    #Find the annotation text for number of smaples for each year
+    y_coord <- vector()
+    n <- vector()
+    range <- max(data$Residual) - min(data$Residual)
+    for(i in unique(data$Year)[order(unique(data$Year))]) {
+      y_coord[length(y_coord) + 1] <- max(data[data$Year==i,"Residual"]) + range * 0.05
+      n[length(n) + 1] <- nrow(data[data$Year==i,])
+    }
+    
+    #Find the y range to expand it a bit to make room for the annotation
+    y_upper <- max(data$Residual) + range * 0.1
+    y_lower <- min(data$Residual) - range * 0.1
+    
+    boxplot(Residual ~ Year, data = data, boxwex=0.5, las = 1, ylim=c(y_lower, y_upper),
+            main = "Residual by year", xlab="Year", ylab = "Residual")
+    abline(h = 0, col="blue")
+    text(x = 1:length(unique(data$Year)), y = y_coord, labels = n)
+    
+  })
+  
+  output$valSeasonBox <- renderPlot({
+    data <- valPlotPoints() %>%
+      mutate(Season = ordered(season(datetime), levels = c("Winter", "Spring", "Summer", "Fall")))
+
+    #Get the annotation text for the count of each season
+    y_coord <- vector()
+    n <- vector()
+    range <- max(data$Residual) - min(data$Residual)
+    for(i in levels(data$Season)) {
+      y_coord[length(y_coord) + 1] <- max(data[data$Season == i, "Residual"]) + range * 0.05
+      n[length(n) + 1] <- nrow(data[data$Season == i,])
+    }
+    
+    #Find the y range to expand it a bit to make room for the annotation
+    y_upper <- max(data$Residual) + range * 0.1
+    y_lower <- min(data$Residual) - range * 0.1
+    
+    boxplot(Residual ~ Season, data=data, boxwex = 0.5, las=1, ylim = c(y_lower, y_upper),
+            main = "Residual by season", xlab = "Season", ylab="Residual")
+    abline(h = 0, col="blue")
+    text(x = 1:length(unique(data$Season)), y = y_coord, labels = n)
+  })
+  
+  output$valTimeSeries <- renderPlot({
+    
+    data <- valPlotPoints()
+    
+    ggplot(data = data) +
+      geom_point(aes(x = datetime, y = Residual), color="blue") +
+      geom_hline(yintercept=0, color="black") +
+      xlab("Date") + ylab("Residual") + ggtitle("Residual by date")
+    
+  })
+  
+  output$downloadValidation <- downloadHandler(
+    filename = function() {
+      paste0(input$dVar, "_validation.csv")
+    }, 
+    content = function(file) {
+      valPlotPoints() %>%
+        select(-censored) %>%
+        write.csv(file=file, row.names=FALSE)
+    }
+  )
+  
+  
   
 })

@@ -291,6 +291,21 @@ shinyUI(fluidPage(
       ),
       fluidRow(
         plotOutput("valPlotZoomed")
+      ),
+      fluidRow(
+        column(6,
+          downloadButton("downloadValidation", label = "Download Table"),
+          dataTableOutput("valDataTable")
+        ),
+        column(6,
+          fluidRow(
+            plotOutput("valTimeSeries")
+          ),
+          fluidRow(
+            column(6, plotOutput("valYearBox")),
+            column(6, plotOutput("valSeasonBox"))
+          )
+        )
       )
     )
   )
