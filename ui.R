@@ -42,13 +42,6 @@ shinyUI(fluidPage(
           textOutput("censorWarning")
         )
       ),
-      fluidRow(
-        column(1, checkboxInput("limitDates", "Limit calibration data to date range"), value=FALSE),
-        column(3, 
-          dateRangeInput("uploadDateRange", label=""),
-          helpText("Data after this range can be used for validation")     
-        )
-      ),
       tabsetPanel(
         tabPanel("Time series",
           fluidRow(

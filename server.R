@@ -97,47 +97,13 @@ shinyServer(function(input,output) {
   #Just the calibration data (if limited by dates on the first tab)
   contData <- reactive({
     cTemp <- allContData()
-    if(input$limitDates) {
-      start <- as.POSIXct(input$uploadDateRange[1], format="%Y-%m-%d")
-      end <- as.POSIXct(input$uploadDateRange[2], format="%Y-%m-%d")
-      cTemp <- cTemp[cTemp$datetime > start & cTemp$datetime < end,]
-    }
     cTemp
   })
   
-  #Just the validation data (outside of the range selected on the first tab)
-  valContData <- reactive({
-    cTemp <- allContData()
-    if(input$limitDates) {
-      start <- as.POSIXct(input$uploadDateRange[1], format="%Y-%m-%d")
-      end <- as.POSIXct(input$uploadDateRange[2], format="%Y-%m-%d")
-      cTemp <- cTemp[cTemp$datetime < start | cTemp$datetime > end,]
-    } else {
-      cTemp <- cTemp[0,]
-    }
-  })
   
   #Just the transformed continuous calibration data (inside of the range selected on the first tab)
   contDataTrans <- reactive({
     cTemp <- allContDataTrans()
-    if(input$limitDates) {
-      start <- as.POSIXct(input$uploadDateRange[1], format="%Y-%m-%d")
-      end <- as.POSIXct(input$uploadDateRange[2], format="%Y-%m-%d")
-      cTemp <- cTemp[cTemp$datetime > start & cTemp$datetime < end,]
-    }
-    cTemp
-  })
-  
-  #Just the transformed continuous validation data (outside of the range selected on the first tab)
-  valContDataTrans <- reactive({
-    cTemp <- allContDataTrans()
-    if(input$limitDates) {
-      start <- as.POSIXct(input$uploadDateRange[1], format="%Y-%m-%d")
-      end <- as.POSIXct(input$uploadDateRange[2], format="%Y-%m-%d")
-      cTemp <- cTemp[cTemp$datetime < start | cTemp$datetime > end,]
-    } else {
-      cTemp <- cTemp[0,]
-    }
     cTemp
   })
   
@@ -168,24 +134,6 @@ shinyServer(function(input,output) {
   #The data part of the sample data, inside of the date range selected for calibration
   sampleData <- reactive({
     sTemp <- allSampleData()
-    if(input$limitDates) {
-      start <- as.POSIXct(input$uploadDateRange[1], format="%Y-%m-%d")
-      end <- as.POSIXct(input$uploadDateRange[2], format="%Y-%m-%d")
-      sTemp <- sTemp[sTemp$datetime > start & sTemp$datetime < end,]
-    }
-    sTemp
-  })
-  
-  #The data part of the sample data, outside of the date range selected for calibration
-  valSampleData <- reactive({
-    sTemp <- allSampleData()
-    if(input$limitDates) {
-      start <- as.POSIXct(input$uploadDateRange[1], format="%Y-%m-%d")
-      end <- as.POSIXct(input$uploadDateRange[2], format="%Y-%m-%d")
-      sTemp <- sTemp[sTemp$datetime > end,]
-    } else {
-      sTemp <- sTemp[0,]
-    }
     sTemp
   })
   
@@ -199,24 +147,6 @@ shinyServer(function(input,output) {
   #The qualifer part of the sample data, inside of the date range selected on the first tab
   isCensored <- reactive({
     temp <- allIsCensored()
-    if(input$limitDates) {
-      start <- as.POSIXct(input$uploadDateRange[1], format="%Y-%m-%d")
-      end <- as.POSIXct(input$uploadDateRange[2], format="%Y-%m-%d")
-      temp <- temp[temp$datetime > start & temp$datetime < end,]
-    }
-    temp
-  })
-  
-  #The qualifer part of the sample data, outside of the date range selected on the first tab
-  valIsCensored <- reactive({
-    temp <- allIsCensored()
-    if(input$limitDates) {
-      start <- as.POSIXct(input$uploadDateRange[1], format="%Y-%m-%d")
-      end <- as.POSIXct(input$uploadDateRange[2], format="%Y-%m-%d")
-      temp <- temp[temp$datetime < start | temp$datetime > end,]
-    } else {
-      temp <- temp[0,]
-    }
     temp
   })
   
