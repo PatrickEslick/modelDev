@@ -279,34 +279,6 @@ shinyUI(fluidPage(
           dataTableOutput("predictTable")         
         )
       )
-    ),
-    tabPanel("Validation",
-      fluidRow(
-        column(2, uiOutput("valModelSelectUI")),
-        column(1, checkboxInput("valNativeUnits", label="Native units", value=TRUE))
-      ),
-      fluidRow(
-        plotOutput("valPlot", width="100%", height="400px", 
-                   brush = brushOpts(id = "valBrush", resetOnNew = FALSE, direction="x"))
-      ),
-      fluidRow(
-        plotOutput("valPlotZoomed")
-      ),
-      fluidRow(
-        column(6,
-          downloadButton("downloadValidation", label = "Download Table"),
-          dataTableOutput("valDataTable")
-        ),
-        column(6,
-          fluidRow(
-            plotOutput("valTimeSeries")
-          ),
-          fluidRow(
-            column(6, plotOutput("valYearBox")),
-            column(6, plotOutput("valSeasonBox"))
-          )
-        )
-      )
     )
   )
 ))
