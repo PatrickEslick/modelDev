@@ -1153,7 +1153,7 @@ shinyServer(function(input,output) {
     isCens <- isCens[isCens$datetime %in% modelData$datetime, c("datetime", input$dVar)]
     isFlag <- model1isFlag()
     
-    modelXovc(model1Form(), model1lm(), model1Function(), model1antiFunction(), isCens, isFlag)
+    modelXovc(model1Form(), model1lm(), isCens, isFlag)
     
   })
   
@@ -1168,7 +1168,7 @@ shinyServer(function(input,output) {
     isCens <- isCens[isCens$datetime %in% modelData$datetime, c("datetime", input$dVar)]
     isFlag <- model2isFlag()
 
-    modelXovc(model2Form(), model2lm(), model2Function(), model2antiFunction(), isCens, isFlag)
+    modelXovc(model2Form(), model2lm(), isCens, isFlag)
     
   })
   
@@ -1183,7 +1183,7 @@ shinyServer(function(input,output) {
     isCens <- isCens[isCens$datetime %in% modelData$datetime, c("datetime", input$dVar)]
     isFlag <- model3isFlag()
     
-    modelXovc(model3Form(), model3lm(), model3Function(), model3antiFunction(), isCens, isFlag)
+    modelXovc(model3Form(), model3lm(), isCens, isFlag)
     
   })
   

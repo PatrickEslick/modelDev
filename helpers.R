@@ -417,12 +417,11 @@ modelXeq <- function(form, model) {
 }
 
 #Function to generate residual vs computed value plot
-modelXovc <- function(form, model, func, antiFunc, isCens, isFlag) {
+modelXovc <- function(form, model, isCens, isFlag) {
   
   temp <- data.frame(predict(model), y=resid(model))
   names(temp) <- c("Regression.Computed","Residuals")
   res <- temp$Residuals
-  trans <- trans_new("t", func, antiFunc)
   temp$censored <- isCens[,2]
   temp$flagged <- isFlag[,2]
   
@@ -431,7 +430,7 @@ modelXovc <- function(form, model, func, antiFunc, isCens, isFlag) {
     scale_shape_manual(values=c(19, 1), guide=FALSE) +
     scale_color_manual(values=c("black", "red"), guide=FALSE) +
     scale_y_continuous() +
-    scale_x_continuous("Regression Computed", trans=trans) +
+    scale_x_continuous("Regression Computed") +
     geom_smooth(method="loess", size=1.0, se=FALSE) +
     geom_hline(aes(yintercept=0))
   
