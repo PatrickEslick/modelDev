@@ -56,12 +56,12 @@ shinyServer(function(input,output) {
     withProgress(message="Generating data...", value=0.1, {
       incProgress(0.2, "Adding seasonality...")
       if(input$sin2piD) {
-        Data$sin2piD <- sin(2*pi*(Data$day/365))
-        Data$cos2piD <- cos(2*pi*(Data$day/365))
+        Data$sin2piD <- sin(2*pi*Data$pdectime)
+        Data$cos2piD <- cos(2*pi*Data$pdectime)
       }
       if(input$sin4piD) {
-        Data$sin4piD <- sin(4*pi*(Data$day/365))
-        Data$cos4piD <- cos(4*pi*(Data$day/365))
+        Data$sin4piD <- sin(4*pi*Data$pdectime)
+        Data$cos4piD <- cos(4*pi*Data$pdectime)
       }
       #Drop all the time variables except datetime
       Data <- Data[,!(names(Data) %in% c("dectime", "year", "month", "day", "hour"))]
@@ -186,15 +186,14 @@ shinyServer(function(input,output) {
     Data <- sampleData()
     #Add seasonality variables, if selected
     if(input$sin2piD) {
-      Data$sin2piD <- sin(2*pi*(Data$day/365))
-      Data$cos2piD <- cos(2*pi*(Data$day/365))
+      Data$sin2piD <- sin(2*pi*Data$dectime)
+      Data$cos2piD <- cos(2*pi*Data$dectime)
     }
     if(input$sin4piD) {
-      Data$sin4piD <- sin(4*pi*(Data$day/365))
-      Data$cos4piD <- cos(4*pi*(Data$day/365))
+      Data$sin4piD <- sin(4*pi*Data$dectime)
+      Data$cos4piD <- cos(4*pi*Data$dectime)
     }
-    #Drop all the time variables except datetime
-    Data <- Data[,!(names(Data) %in% c("dectime", "year", "month", "day", "hour"))]
+
     #ONly include variables checked in the second tab
     datetimes <- Data$datetime
     Data <- Data[,names(Data)[names(Data) %in% c(input$useP, "sin2piD", "cos2piD", "sin4piD", "cos4piD")]]
@@ -217,6 +216,8 @@ shinyServer(function(input,output) {
         names(Data)[names(Data) == i] <- paste("cube", i, sep="")
       }
     }
+    #Drop all the time variables except datetime
+    Data <- Data[,!(names(Data) %in% c("dectime", "year", "month", "day", "hour"))]
     
     Data$datetime <- datetimes
     Data
