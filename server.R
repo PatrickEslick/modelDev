@@ -16,6 +16,7 @@ library(leaps)
 library(reshape2)
 library(MASS)
 library(dplyr)
+library(forecast)
 source("helpers.R")
 
 options(shiny.maxRequestSize=100*1024^2, stringsAsFactors = FALSE)

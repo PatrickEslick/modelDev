@@ -197,10 +197,13 @@ modelXSummary <- function(modelForm, Data, removed, bcf) {
     b.uMSPE <- ((10^b.sigma)-1)*100
     b.lMSPE <- (1-(10^(-1*b.sigma)))*100
   }
-  b.AIC <- AIC(model1)
-  b.BIC <- BIC(model1)
-  b.mat <- data.frame(b.count, b.rsquared, b.adjrsquared, b.sigma, b.uMSPE, b.lMSPE, b.AIC, b.BIC, bcf)
-  rnames <- c("Observations", "R2", "adjR2", "RMSE", "Upper MSPE (90%)", "Lower MSPE (90%)", "AIC", "BIC", "BCF")
+  cv_output <- CV(model1)
+  print(cv_output)
+  b.AIC <- cv_output["AIC"]
+  b.BIC <- cv_output["BIC"]
+  b.CV <- cv_output["CV"]
+  b.mat <- data.frame(b.count, b.rsquared, b.adjrsquared, b.sigma, b.uMSPE, b.lMSPE, b.CV, b.AIC, b.BIC, bcf)
+  rnames <- c("Observations", "R2", "adjR2", "RMSE", "Upper MSPE (90%)", "Lower MSPE (90%)", "CV", "AIC", "BIC", "BCF")
   b.mat <- t(b.mat)
   # row.names(b.mat) <- rnames
   b.mat <- data.frame(rnames, b.mat[,1])
